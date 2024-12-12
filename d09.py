@@ -9,74 +9,96 @@ def read_file():
     f.close()
     return a
 
-def task1(f): # I mean this takes long
+def task1(f):
     f = [int(i) for i in list(f[0])]
     sum = 0
+    mid = len(f) // 2
     id = 0
-    i = 0
+    i, j = (0, len(f)-1)
+    if len(f) % 2 == 0:
+        j -= 1
+        mid -= 1
     dq = deque()
-    s = dict()
-    for v in range(len(f)):
-        n = int(f[v])
-        if v % 2 == 0:
-            for x in range(n):
-                s[i] = id
-                i += 1
+    q = []
+    extra = 0
+    while i <= j:
+        if i % 2 == 0:
+            for x in range(f[i]):
+                q.append(id)
             id += 1
         else:
-            for x in range(n):
-                dq.append(i)
-                i += 1
-    temp1, temp2 = (0,0)
-    while max(s.keys()) > len(s) - 1:
-        m = max(s.keys())
-        temp1 = dq[0]
-        temp2 = m
-        s[dq.popleft()] = s[m]
-        del s[m]
-    for k in s.keys():
-        sum += k * s[k]
+            while len(dq) < f[i] and i <= j:
+                for x in range(f[j]):
+                    dq.append(mid)
+                extra += f[j]
+                mid -= 1
+                j -= 2
+            for x in range(f[i]):
+                if len(dq) > 0:
+                    q.append(dq.popleft())
+                    extra -= 1
+        i += 1
+    while len(dq) > 0 and extra > 0:
+        q.append(dq.popleft())
+        extra -= 1
+    for i in range(len(q)):
+        sum += i * q[i]
     print(sum) #9.1
 
-def task2(f): # and this, I'll improve if I have time at some point
-    f = [int(i) for i in list(f[0])]
+def task2(f):
     sum = 0
+    f = [int(i) for i in list(f[0])]
+    rr = dict()
+    priority = []
     id = 0
-    i = 0
-    s = dict()
-    e = dict()
-    r = dict()
-    finder = defaultdict(lambda: list())
-    for v in range(len(f)):
-        n = int(f[v])
-        if v % 2 == 0:
-            for x in range(n):
-                s[i] = id
-                finder[id].append(i)
-                i += 1
-            r[id] = n
+    for i in range(0, len(f),2):
+        l = f[i]
+        rr[id] = l
+        priority.insert(0,id)
+        id += 1
+    q = []
+    id = 0
+    for i in range(len(f)):
+        n = f[i]
+        if i % 2 == 0:
+            if id in priority:
+                for x in range(n):
+                    q.append(id)
+                priority.remove(id)
+            else:
+                r = rr[id]
+                while r > 0:
+                    ind = 0
+                    while ind < len(priority) and rr[priority[ind]] > n:
+                        ind += 1
+                    if ind < len(priority):
+                        no = priority[ind]
+                        priority.remove(no)
+                        for z in range(rr[no]):
+                            q.append(no)
+                        r -= rr[no]
+                    else:
+                        for z in range(n):
+                            q.append(0)
+                            r -= 1
             id += 1
         else:
             while n > 0:
-                e[i] = n
-                i += 1
-                n -= 1
-    id -= 1
-    while id >= 0:
-        rr = r[id]
-        for er in sorted(e.keys()):
-            if er > finder[id][0]: continue
-            if e[er] >= rr:
-                while rr > 0:
-                    s[er] = id
-                    e[er] = 0
-                    er += 1
-                    rr -= 1
-                for k in finder[id]:
-                    s[k] = -1
-        id -= 1
-    for k in s.keys():
-        if s[k] != -1: sum += k * s[k]
+                ind = 0
+                while ind < len(priority) and rr[priority[ind]] > n:
+                    ind += 1
+                if ind < len(priority):
+                    no = priority[ind]
+                    priority.remove(no)
+                    for z in range(rr[no]):
+                        q.append(no)
+                    n -= rr[no]
+                else:
+                    for z in range(n):
+                        q.append(0)
+                        n -= 1
+    for i in range(len(q)):
+        sum += i * q[i]
     print(sum) #9.2
 
 def main():
